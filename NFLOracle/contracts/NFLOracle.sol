@@ -10,8 +10,23 @@ contract NFLOracle is Ownable {
 
   mapping(uint256=>bool) pendingRequests;
 
-  event GetNFLGameWinnerEvent(address callerAddress, uint id);
-  event SetNFLGameWinnerEvent(uint256 ethPrice, address callerAddress);
+  event GetNFLGameWinnerEvent(address callerAddress, string gameId, uint id);
+  event SetNFLGameWinnerEvent(string gameId, string winner, address callerAddress);
 
-  // Start here
+  function getNFLGameWinner(string memory _gameId) public returns (uint256) {
+    randNonce++;
+    uint id = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce, _gameId))) % modulus;
+    pendingRequests[id] = true;
+    emit GetNFLGameWinnerEvent(msg.sender, _gameId, id);
+    return id;
+  }
+
+  function setNFLGameWinner(string memory _winner, string memory _gameId, address _callerAddress, uint256 _id) public onlyOwner {
+    require(pendingRequests[_id], "This request is not in my pending list.");
+    delete pendingRequests[_id];
+    NFLCallerContractInterface callerContractInstance;
+    callerContractInstance = NFLCallerContractInterface(_callerAddress);
+    callerContractInstance.callback(_ethPrice, _id);
+    emit SetLatestEthPriceEvent(_ethPrice, _callerAddress);
+  }
 }
