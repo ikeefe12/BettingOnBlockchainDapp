@@ -26,7 +26,7 @@ contract NFLOracle is Ownable {
     delete pendingRequests[_id];
     NFLCallerContractInterface callerContractInstance;
     callerContractInstance = NFLCallerContractInterface(_callerAddress);
-    callerContractInstance.callback(_ethPrice, _id);
-    emit SetLatestEthPriceEvent(_ethPrice, _callerAddress);
+    callerContractInstance.callback(_winner, _gameId, _id);
+    emit SetNFLGameWinnerEvent(_winner, _gameId, _callerAddress);
   }
 }
